@@ -12,10 +12,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Render Quarto (if present)
-        uses: quarto-dev/quarto-action@v2
-        with:
-          command: render
+      - name: Render Quarto (optional)
+        run: |
+          if command -v quarto >/dev/null 2>&1; then
+            quarto render || true
+          else
+            echo "Quarto CLI not found; skipping render step"
+          fi
 
       - name: Prepare public directory
         run: |

@@ -1,0 +1,35 @@
+name: Publish site to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Render Quarto (if present)
+        uses: quarto-dev/quarto-action@v2
+        with:
+          command: render
+
+      - name: Prepare public directory
+        run: |
+          set -e
+          rm -rf public || true
+          mkdir -p public
+          if [ -f national_map.html ]; then cp national_map.html public/index.html; fi
+          if [ -d national_map_files ]; then cp -r national_map_files public/; fi
+          if [ -d national_map_cache ]; then cp -r national_map_cache public/; fi
+          # ensure GitHub Pages doesn't run Jekyll
+          touch public/.nojekyll
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: public
